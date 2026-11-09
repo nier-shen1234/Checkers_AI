@@ -43,19 +43,28 @@ class CheckerBoard(object):
         self.active = BLACK
         self.passive = WHITE
 
-        self.forward[BLACK] = 0x1eff
-        self.backward[BLACK] = 0
+        # This is Standard 12 forward pieces for Black
+        self.forward[BLACK] = 0x1EFF
+        # I Give ONLY square 12 backward movement
+        self.backward[BLACK] = 1 << 12
         self.pieces[BLACK] = self.forward[BLACK] | self.backward[BLACK]
 
+        # Standard starting pieces for White
         self.forward[WHITE] = 0
-        self.backward[WHITE] = 0x7fbc00000
+        self.backward[WHITE] = 0x07fbc00000
         self.pieces[WHITE] = self.forward[WHITE] | self.backward[WHITE]
 
         self.empty = UNUSED_BITS ^ (2**36 - 1) ^ (self.pieces[BLACK] | self.pieces[WHITE])
 
         self.jump = 0
         self.mandatory_jumps = []
+        self.turn = BLACK
+        self.black = self.pieces[BLACK]
+        self.white = self.pieces[WHITE]
 
+        # Designate square 12 as a King on Turn 1
+        self.kings = 1 << 12
+          
     def make_move(self, move):
         """
             Updates the game state to reflect the effects of the input

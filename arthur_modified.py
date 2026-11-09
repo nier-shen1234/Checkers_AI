@@ -309,20 +309,23 @@ def score(board_old, board_new):
     _moc_4 = 1 if not undenied_mobility and not control else 0
 
     board_score = _moc_2*(-1)*(2**18)  \
-                + _kcent*(2**16)       \
+                + _kcent*(2**18)       \
                 + _moc_4*(-1)*(2**14)  \
                 + _mode_3*(-1)*(2**13) \
                 + _demmo*(-1)*(2**11)  \
                 + _mov*(2**8)          \
-                + _adv*(-1)*(2**8)     \
+                + _adv*(-1)*(2**16)     \
                 + _mode_2*(-1)*(2**8)  \
-                + _back*(-1)*(2**6)    \
-                + _cntr*(2**5)         \
+                + _back*(-1)*(2**2)    \
+                + _cntr*(2**8)         \
                 + _thret*(2**5)        \
                 + _moc_3*(2**4)        \
                 + piece_score_diff(board_new, board_old.active)*(2**20) \
-                + position_score(board_new, board_old.active)*(2**14) \
-                + _adv*(-1)*(2**12) \
+                + position_score(board_new, board_old.active)*(2**14) 
+        # kcent(2**18), prioritizes controlling central squares for King pieces, more agressive
+        # adv(-1*(2**16)), prioritizes advancing pieces, more agressive
+        # back(-1*(2**2)), made less defensive
+        # cntr(2**8), prioritizes controlling the center, more aggressive
 
     return board_score
 

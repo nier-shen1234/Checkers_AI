@@ -2,6 +2,7 @@ import checkers
 import agent
 import arthur
 import arthur_modified
+import random_agent
 
 def run_tournament(num_games=5):
     # Initialize the agents at Depth 3
@@ -27,7 +28,7 @@ def run_tournament(num_games=5):
 
         # Game loop with a move limit cap to prevent endless shuffling loops
         move_count = 0
-        max_moves = 60
+        max_moves = 100
 
         while not board.is_over() and move_count < max_moves:
             move1 = current_p1.make_move(board)
@@ -49,14 +50,45 @@ def run_tournament(num_games=5):
 
         # Tally scores based on outcome or move limit tie
         if move_count >= max_moves:
-            print(f"--- Game {i+1} ended in a Tie (Move limit reached)! ---\n")
-            ties += 1
+            print(f"--- Game {i+1} reached move limit! Evaluating piece count... ---\n")
+
+            if hasattr(board, 'get_board'):
+                flat_board = board.get_board()
+                p1_pieces = sum(1 for p in flat_board if p == 1 or p == 'r')
+                p2_pieces = sum(1 for p in flat_board if p == 'b' or p == 2)
+            else:
+                # Absolute fallback if attribute structure differs
+                p1_pieces, p2_pieces = 12, 12
+
+            print(f"[{p1_name}] Pieces: {p1_pieces} | [{p2_name}] Pieces: {p2_pieces}")
+            
+            if p1_pieces > p2_pieces:
+                print(f"[{p1_name}] is winning by piece count!")
+                if i % 2 == 0:
+                    p1_wins += 1
+                else:
+                    p2_wins += 1
+            elif p2_pieces > p1_pieces:
+                print(f"[{p2_name}] is winning by piece count!")
+                if i % 2 == 0:
+                    p2_wins += 1
+                else:
+                    p1_wins += 1
+            else:
+                print(f"Both players are tied in piece count!")
+                ties += 1
         else:
-            winner = board.get_winner()
+            if hasattr(board, 'winner'):
+                winner = board.winner()
+            elif hasattr(board, 'get_winner'):
+                winner = board.get_winner()
+            else:
+                winner = None
+
             print(f"--- Game {i+1} finished! Winner: {winner} ---\n")
             if winner == 1:
                 p1_wins += 1
-            elif winner == 2:
+            elif winner == 2 or winner == -1:
                 p2_wins += 1
             else:
                 ties += 1

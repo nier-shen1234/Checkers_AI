@@ -211,11 +211,17 @@ class CheckerBoard(object):
         moves = []
 
         if (rfj | lfj | rbj | lbj) != 0:
+            # Standard jumps. You land one square after taking a piece (Normal checkers law)
             moves += [-0x101 << i for (i, bit) in enumerate(bin(rfj)[::-1]) if bit == '1']
             moves += [-0x401 << i for (i, bit) in enumerate(bin(lfj)[::-1]) if bit == '1']
             moves += [-0x101 << i - 8 for (i, bit) in enumerate(bin(rbj)[::-1]) if bit == '1']
             moves += [-0x401 << i - 10 for (i, bit) in enumerate(bin(lbj)[::-1]) if bit == '1']
 
+            # Extended jumps (landing two squares after taking a piece)
+            moves += [-0x202 << i for (i, bit) in enumerate(bin(rfj)[::-1]) if bit == '1']
+            moves += [-0x802 << i for (i, bit) in enumerate(bin(lfj)[::-1]) if bit == '1']
+            moves += [-0x202 << i - 8 for (i, bit) in enumerate(bin(rbj)[::-1]) if bit == '1']
+            moves += [-0x802 << i - 10 for (i, bit) in enumerate(bin(lbj)[::-1]) if bit == '1']
         return moves
 
     def jumps_from(self, piece):

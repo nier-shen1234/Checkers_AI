@@ -1,6 +1,7 @@
 
 
 # This file describes the time complexity of the checkers AI. Time complexity increases with depth O(b^d)
+# b is branching factor and d is depths
 
 import time 
 import checkers

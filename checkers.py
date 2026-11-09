@@ -226,11 +226,19 @@ class CheckerBoard(object):
             moves += [-0x101 << i - 8 for (i, bit) in enumerate(bin(rbj)[::-1]) if bit == '1']
             moves += [-0x401 << i - 10 for (i, bit) in enumerate(bin(lbj)[::-1]) if bit == '1']
 
-            # Extended jumps (landing two squares after taking a piece)
-            moves += [-0x202 << i for (i, bit) in enumerate(bin(rfj)[::-1]) if bit == '1']
-            moves += [-0x802 << i for (i, bit) in enumerate(bin(lfj)[::-1]) if bit == '1']
-            moves += [-0x202 << i - 8 for (i, bit) in enumerate(bin(rbj)[::-1]) if bit == '1']
-            moves += [-0x802 << i - 10 for (i, bit) in enumerate(bin(lbj)[::-1]) if bit == '1']
+            # Forward extended jumps
+            moves += [-(0x1001 << i) for (i, bit) in enumerate(
+            bin(rfj & (self.empty >> 12))[::-1]) if bit == '1']
+
+            moves += [-(0x8001 << i) for (i, bit) in enumerate(
+            bin(lfj & (self.empty >> 15))[::-1]) if bit == '1']
+
+            # Backward extended jumps
+            moves += [-(0x1001 << (i - 12)) for (i, bit) in enumerate(
+            bin(rbj & (self.empty << 12))[::-1]) if bit == '1']
+
+            moves += [-(0x8001 << (i - 15)) for (i, bit) in enumerate(
+            bin(lbj & (self.empty << 15))[::-1]) if bit == '1']
         return moves
 
     def jumps_from(self, piece):
@@ -266,6 +274,20 @@ class CheckerBoard(object):
             moves += [-0x401 << i for (i, bit) in enumerate(bin(lfj)[::-1]) if bit == '1']
             moves += [-0x101 << i - 8 for (i, bit) in enumerate(bin(rbj)[::-1]) if bit == '1']
             moves += [-0x401 << i - 10 for (i, bit) in enumerate(bin(lbj)[::-1]) if bit == '1']
+
+            # Extended forward jumps
+            moves += [-(0x1001 << i) for (i, bit) in enumerate(
+            bin(rfj & (self.empty >> 12))[::-1]) if bit == '1']
+
+            moves += [-(0x8001 << i) for (i, bit) in enumerate(
+            bin(lfj & (self.empty >> 15))[::-1]) if bit == '1']
+
+            # Extended backward jumps
+            moves += [-(0x1001 << (i - 12)) for (i, bit) in enumerate(
+            bin(rbj & (self.empty << 12))[::-1]) if bit == '1']
+
+            moves += [-(0x8001 << (i - 15)) for (i, bit) in enumerate(
+            bin(lbj & (self.empty << 15))[::-1]) if bit == '1']
 
         return moves
 

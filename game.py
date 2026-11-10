@@ -190,54 +190,23 @@ def main():
 def game_over(board):
     return len(board.get_moves()) == 0
 
+def square_number(bit):
+    """Convert a single-bit board value to its square number (1-32)."""
+    b = bit.bit_length() - 1
+    return 1 + b - b // 9
+
 def get_move_strings(board):
-    rfj = board.right_forward_jumps()
-    lfj = board.left_forward_jumps()
-    rbj = board.right_backward_jumps()
-    lbj = board.left_backward_jumps()
-
-    if (rfj | lfj | rbj | lbj) != 0:
-        rfj = [(1 + i - i//9, 1 + (i + 8) - (i + 8)//9)
-                    for (i, bit) in enumerate(bin(rfj)[::-1]) if bit == '1']
-        lfj = [(1 + i - i//9, 1 + (i + 10) - (i + 8)//9)
-                    for (i, bit) in enumerate(bin(lfj)[::-1]) if bit == '1']
-        rbj = [(1 + i - i//9, 1 + (i - 8) - (i - 8)//9)
-                    for (i, bit) in enumerate(bin(rbj)[::-1]) if bit ==  '1']
-        lbj = [(1 + i - i//9, 1 + (i - 10) - (i - 10)//9)
-                    for (i, bit) in enumerate(bin(lbj)[::-1]) if bit == '1']
-
-        if board.active == BLACK:
-            regular_moves = ["%i to %i" % (orig, dest) for (orig, dest) in rfj + lfj]
-            reverse_moves = ["%i to %i" % (orig, dest) for (orig, dest) in rbj + lbj]
-            return regular_moves + reverse_moves
-        else:
-            reverse_moves = ["%i to %i" % (orig, dest) for (orig, dest) in rfj + lfj]
-            regular_moves = ["%i to %i" % (orig, dest) for (orig, dest) in rbj + lbj]
-            return reverse_moves + regular_moves
-
-
-    rf = board.right_forward()
-    lf = board.left_forward()
-    rb = board.right_backward()
-    lb = board.left_backward()
-
-    rf = [(1 + i - i//9, 1 + (i + 4) - (i + 4)//9)
-                for (i, bit) in enumerate(bin(rf)[::-1]) if bit == '1']
-    lf = [(1 + i - i//9, 1 + (i + 5) - (i + 5)//9)
-                for (i, bit) in enumerate(bin(lf)[::-1]) if bit == '1']
-    rb = [(1 + i - i//9, 1 + (i - 4) - (i - 4)//9)
-                for (i, bit) in enumerate(bin(rb)[::-1]) if bit ==  '1']
-    lb = [(1 + i - i//9, 1 + (i - 5) - (i - 5)//9)
-                for (i, bit) in enumerate(bin(lb)[::-1]) if bit == '1']
-
-    if board.active == BLACK:
-        regular_moves = ["%i to %i" % (orig, dest) for (orig, dest) in rf + lf]
-        reverse_moves = ["%i to %i" % (orig, dest) for (orig, dest) in rb + lb]
-        return regular_moves + reverse_moves
-    else:
-        regular_moves = ["%i to %i" % (orig, dest) for (orig, dest) in rb + lb]
-        reverse_moves = ["%i to %i" % (orig, dest) for (orig, dest) in rf + lf]
-        return reverse_moves + regular_moves
+    """Build the move menu directly from board.get_moves(), so the numbers always match the real list (including extended jumps)."""
+    labels = []
+    for move in board.get_moves():
+        move = abs(move)
+        origin = move & board.pieces[board.active]
+        dest = move ^ origin
+        text = "%i to %i" % (square_number(origin), square_number(dest))
+        if abs(origin.bit_length() - dest.bit_length()) in (12, 15):
+            text += " (extended jump)"
+        labels.append(text)
+    return labels
 
 if __name__ == '__main__':
     try:

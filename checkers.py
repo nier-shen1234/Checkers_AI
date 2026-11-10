@@ -77,7 +77,7 @@ class CheckerBoard(object):
         passive = self.passive
         if move < 0:
             move *= -1
-            taken_piece = int(1 << old_div(sum(i for (i, b) in enumerate(bin(move)[::-1]) if b == '1'),2))
+            taken_piece = self._captured(move)
             self.pieces[passive] ^= taken_piece
             if self.forward[passive] & taken_piece:
                 self.forward[passive] ^= taken_piece
@@ -120,7 +120,7 @@ class CheckerBoard(object):
         passive = B.passive
         if move < 0:
             move *= -1
-            taken_piece = int(1 << old_div(sum(i for (i, b) in enumerate(bin(move)[::-1]) if b == '1'),2))
+            taken_piece = B._captured(move)
             B.pieces[passive] ^= taken_piece
             if B.forward[passive] & taken_piece:
                 B.forward[passive] ^= taken_piece
@@ -226,20 +226,31 @@ class CheckerBoard(object):
             moves += [-0x101 << i - 8 for (i, bit) in enumerate(bin(rbj)[::-1]) if bit == '1']
             moves += [-0x401 << i - 10 for (i, bit) in enumerate(bin(lbj)[::-1]) if bit == '1']
 
-            # Forward extended jumps
-            moves += [-(0x1001 << i) for (i, bit) in enumerate(
-            bin(rfj & (self.empty >> 12))[::-1]) if bit == '1']
-
-            moves += [-(0x8001 << i) for (i, bit) in enumerate(
-            bin(lfj & (self.empty >> 15))[::-1]) if bit == '1']
-
-            # Backward extended jumps
-            moves += [-(0x1001 << (i - 12)) for (i, bit) in enumerate(
-            bin(rbj & (self.empty << 12))[::-1]) if bit == '1']
-
-            moves += [-(0x8001 << (i - 15)) for (i, bit) in enumerate(
-            bin(lbj & (self.empty << 15))[::-1]) if bit == '1']
+            # Extended jumps: land two squares after the captured piece instead of one
+            rfx = rfj & (self.empty >> 12)
+            lfx = lfj & (self.empty >> 15)
+            rbx = rbj & (self.empty << 12)
+            lbx = lbj & (self.empty << 15)
+            moves += [-0x1001 << i for (i, b) in enumerate(bin(rfx)[::-1]) if b == '1']
+            moves += [-0x8001 << i for (i, b) in enumerate(bin(lfx)[::-1]) if b == '1']
+            moves += [-0x1001 << (i - 12) for (i, b) in enumerate(bin(rbx)[::-1]) if b == '1']
+            moves += [-0x8001 << (i - 15) for (i, b) in enumerate(bin(lbx)[::-1]) if b == '1']
+           
         return moves
+    
+    def _captured(self, move):
+        """move is a positive two-bit int; returns the bit of the jumped piece."""
+        origin = move & self.pieces[self.active]
+        dest = move ^ origin
+        lo_i = min(origin, dest).bit_length() - 1
+        hi_i = max(origin, dest).bit_length() - 1
+        d = hi_i - lo_i
+        step = 4 if d % 4 == 0 else 5
+        for k in range(1, d // step):
+            sq = 1 << (lo_i + k * step)
+            if sq & self.pieces[self.passive]:
+                return sq
+        return 0
 
     def jumps_from(self, piece):
         """

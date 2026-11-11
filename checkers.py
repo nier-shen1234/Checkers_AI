@@ -240,6 +240,7 @@ class CheckerBoard(object):
            
         return moves
     
+    # Added this new function to match extended jumps
     def _captured(self, move):
         # move is a positive two-bit int. returns the bit of the jumped piece.
         origin = move & self.pieces[self.active]

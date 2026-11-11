@@ -191,12 +191,12 @@ def game_over(board):
     return len(board.get_moves()) == 0
 
 def square_number(bit):
-    """Convert a single-bit board value to its square number (1-32)."""
+    # Converts a single-bit board value to its square number (1-32).
     b = bit.bit_length() - 1
     return 1 + b - b // 9
 
 def get_move_strings(board):
-    """Build the move menu directly from board.get_moves(), so the numbers always match the real list (including extended jumps)."""
+    # Build the move menu directly from board.get_moves(), so the numbers always match the real list (including extended jumps).
     labels = []
     for move in board.get_moves():
         move = abs(move)

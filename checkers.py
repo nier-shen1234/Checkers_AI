@@ -227,10 +227,12 @@ class CheckerBoard(object):
             moves += [-0x401 << i - 10 for (i, bit) in enumerate(bin(lbj)[::-1]) if bit == '1']
 
             # Extended jumps: land two squares after the captured piece instead of one
+            # this part finds the pieces that do the process (i.e 12 bits away etc)
             rfx = rfj & (self.empty >> 12)
             lfx = lfj & (self.empty >> 15)
             rbx = rbj & (self.empty << 12)
             lbx = lbj & (self.empty << 15)
+            # This turns the pieces into the actual moves
             moves += [-0x1001 << i for (i, b) in enumerate(bin(rfx)[::-1]) if b == '1']
             moves += [-0x8001 << i for (i, b) in enumerate(bin(lfx)[::-1]) if b == '1']
             moves += [-0x1001 << (i - 12) for (i, b) in enumerate(bin(rbx)[::-1]) if b == '1']
@@ -239,7 +241,7 @@ class CheckerBoard(object):
         return moves
     
     def _captured(self, move):
-        """move is a positive two-bit int; returns the bit of the jumped piece."""
+        # move is a positive two-bit int. returns the bit of the jumped piece.
         origin = move & self.pieces[self.active]
         dest = move ^ origin
         lo_i = min(origin, dest).bit_length() - 1
